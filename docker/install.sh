@@ -78,7 +78,7 @@ fi
 [[ "$(uname -s)" == "Linux" ]] || fail "Only Linux is supported."
 command -v systemctl >/dev/null 2>&1 || fail "systemd/systemctl is required."
 
-for command_name in curl tar install mktemp; do
+for command_name in curl tar install mktemp getent groupadd usermod stat; do
     command -v "$command_name" >/dev/null 2>&1 \
         || fail "Required command not found: $command_name"
 done
@@ -114,6 +114,7 @@ COMPOSE_PLUGIN="$COMPOSE_PLUGIN_DIR/docker-compose"
 DOCKER_UNIT="/etc/systemd/system/docker.service"
 DOCKER_BIN="/usr/bin/docker"
 DOCKERD_BIN="/usr/bin/dockerd"
+DOCKER_SOCKET="/var/run/docker.sock"
 
 TEMP_DIR="$(mktemp -d)"
 cleanup() {
@@ -190,6 +191,12 @@ fi
 
 install -d -m 0755 "$DOCKER_DATA_ROOT"
 
+# dockerd resolves the socket group when it starts.
+if ! getent group docker >/dev/null; then
+    log "Creating the docker system group."
+    groupadd --force --system docker
+fi
+
 if [[ "$UNIT_CHANGED" == "true" ]]; then
     systemctl daemon-reload
 fi
@@ -234,6 +241,19 @@ for _ in {1..30}; do
 done
 [[ "$daemon_ready" == "true" ]] \
     || fail "Docker service started but the daemon did not become ready. Check: journalctl -u docker"
+
+if [[ -n "${SUDO_USER:-}" && "${SUDO_UID:-0}" != "0" ]]; then
+    user_groups="$(id -nG -- "$SUDO_USER")"
+    if [[ " $user_groups " != *" docker "* ]]; then
+        usermod -aG docker -- "$SUDO_USER"
+        log "Added $SUDO_USER to the docker group (root-equivalent access)."
+    fi
+    log "Log out and back in, or run 'newgrp docker' in your original shell, then run 'docker ps'."
+fi
+
+if [[ -S "$DOCKER_SOCKET" && "$(stat -c '%G' "$DOCKER_SOCKET")" == "root" ]]; then
+    log "The default Docker socket still belongs to group root. If using the default daemon configuration, run 'sudo systemctl restart docker.service' when it is safe to restart running containers."
+fi
 
 log "Installation complete."
 "$DOCKER_BIN" --version
