@@ -9,8 +9,8 @@
 # Usage:
 #   sudo ./install.sh
 #   sudo ./install.sh --docker-data-root /data2/docker
-#   sudo ./install.sh --docker-version 29.7.2 \
-#       --compose-version v5.5.0
+#   sudo ./install.sh --docker-version 29.10.0 \
+#       --compose-version v5.8.0
 #
 # Optional environment variables for mirrors:
 #   DOCKER_DOWNLOAD_BASE=https://download.docker.com/linux/static/stable
@@ -18,8 +18,8 @@
 
 set -euo pipefail
 
-DOCKER_VERSION="${DOCKER_VERSION:-29.7.2}"
-COMPOSE_VERSION="${COMPOSE_VERSION:-v5.5.0}"
+DOCKER_VERSION="${DOCKER_VERSION:-29.10.0}"
+COMPOSE_VERSION="${COMPOSE_VERSION:-v5.8.0}"
 DOCKER_DATA_ROOT="${DOCKER_DATA_ROOT:-/data/docker}"
 DOCKER_DOWNLOAD_BASE="${DOCKER_DOWNLOAD_BASE:-https://download.docker.com/linux/static/stable}"
 COMPOSE_DOWNLOAD_BASE="${COMPOSE_DOWNLOAD_BASE:-https://github.com/docker/compose/releases/download}"

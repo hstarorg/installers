@@ -1,5 +1,7 @@
 # Docker 安装
 
+默认安装 Docker Engine [29.10.0](https://docs.docker.com/engine/release-notes/29/#29100) 和 Docker Compose [v5.8.0](https://github.com/docker/compose/releases/tag/v5.8.0)，于 2026-11-24 核对为最新稳定版。
+
 在使用 systemd 的 Linux 主机上执行：
 
 ```bash
@@ -12,9 +14,10 @@ Docker 数据默认保存在 `/data/docker`。如需自定义目录：
 curl -fsSL https://raw.githubusercontent.com/hstarorg/installers/main/docker/install.sh | sudo bash -s -- --docker-data-root /data2/docker
 ```
 
-脚本会在启动 Docker 前创建 `docker` 组，并将通过 `sudo` 执行安装的普通用户加入该组。`docker` 组具有等同于 root 的权限。安装后请重新登录，或在原终端运行 `newgrp docker`，再验证：
+脚本会在启动 Docker 前创建 `docker` 组，并将通过 `sudo` 执行安装的普通用户加入该组。`docker` 组具有等同于 root 的权限。当前 SSH 会话的组权限不会自动刷新；安装后请断开并重新连接 SSH，或在原来的普通用户终端依次执行以下命令。已经重新登录的终端可跳过 `newgrp docker`：
 
 ```bash
+newgrp docker
 docker ps
 docker --version
 docker compose version
